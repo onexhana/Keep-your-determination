@@ -64,19 +64,19 @@ def navigate_to(url):
 
 with col1:
     if st.button("📅 캘린더"):
-        navigate_to("http://localhost:8501/%EC%BA%98%EB%A6%B0%EB%8D%94")  # 캘린더 페이지로 이동
+        navigate_to("https://keepyour-determination.streamlit.app/%EC%BA%98%EB%A6%B0%EB%8D%94")  # 캘린더 페이지로 이동
 
 
 with col2:
     if st.button("✅ 체크리스트 "):
-        navigate_to("http://localhost:8501/%EC%B2%B4%ED%81%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8_%EC%9E%91%EC%84%B1")  # 체크리스트 이동
+        navigate_to("https://keepyour-determination.streamlit.app/%EC%B2%B4%ED%81%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8_%EC%9E%91%EC%84%B1")  # 체크리스트 이동
 
 with col3:
     if st.button("🤖 챗봇상담"):
-        navigate_to("http://localhost:8501/%EC%B1%97%EB%B4%87_%EC%83%81%EB%8B%B4")  # 챗봇 페이지로 이동
+        navigate_to("https://keepyour-determination.streamlit.app/%EC%B1%97%EB%B4%87_%EC%83%81%EB%8B%B4")  # 챗봇 페이지로 이동
 
 
 with col4:
     if st.button("📕이용방법"):
-        navigate_to("http://localhost:8501/%EC%9D%B4%EC%9A%A9%EB%B0%A9%EB%B2%95")  # 이용방법 이동
+        navigate_to("https://keepyour-determination.streamlit.app/%EC%9D%B4%EC%9A%A9%EB%B0%A9%EB%B2%95")  # 이용방법 이동
       
