@@ -54,10 +54,11 @@ def logout():
 
 def login():
     flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-        r"C:\\chat-gpt-prg\\keep-your-determination\\client_secret_529596907303-j96e1i1hsf6mmtsj5nas3t110v4fvpup.apps.googleusercontent.com.json", 
-        scopes=['https://www.googleapis.com/auth/calendar']
+    secrets_file,
+    scopes=['https://www.googleapis.com/auth/calendar']
     )
-    creds = flow.run_local_server(port=0)
+    creds = flow.run_console()
+
     save_credentials_to_file(creds)
     return creds
 
