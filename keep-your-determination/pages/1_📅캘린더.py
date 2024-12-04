@@ -15,7 +15,6 @@ CREDENTIALS_FILE = "google_credentials.json"
 st.set_page_config(page_title="Calendar", page_icon="📅", layout="centered")
 st.title("📅 스케줄 관리 페이지")
 
-
 # 자격 증명 관련 함수
 def creds_to_dict(creds):
     return {
@@ -49,18 +48,24 @@ def refresh_credentials(creds):
 def logout():
     if os.path.exists(CREDENTIALS_FILE):
         os.remove(CREDENTIALS_FILE)
-        st.success("\uc131\uacf5\uc801\uc73c\ub85c \ub85c\uadf8\uc544\uc6c3\ub418\uc5c8\uc2b5\ub2c8\ub2e4.")
+        st.success("성공적으로 로그아웃되었습니다.")
         st.write('<script>window.location.reload()</script>', unsafe_allow_html=True)
 
 def login():
-    flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-    secrets_file,
-    scopes=['https://www.googleapis.com/auth/calendar']
-    )
-    creds = flow.run_console()
-
-    save_credentials_to_file(creds)
-    return creds
+    secrets_file = os.getenv("GOOGLE_CLIENT_SECRETS")
+    if secrets_file:
+        with open("client_secret.json", "w") as f:
+            f.write(secrets_file)
+        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+            "client_secret.json",
+            scopes=['https://www.googleapis.com/auth/calendar']
+        )
+        creds = flow.run_console()
+        save_credentials_to_file(creds)
+        return creds
+    else:
+        st.error("환경 변수 'GOOGLE_CLIENT_SECRETS'가 설정되지 않았습니다.")
+        return None
 
 # 캘린더 일정 관련 함수
 def add_event(service, summary, location, description, start_time, end_time, time_zone='Asia/Seoul'):
@@ -138,7 +143,8 @@ if creds:
 else:
     if st.button("로그인"):
         creds = login()
-        service = build('calendar', 'v3', credentials=creds)
+        if creds:
+            service = build('calendar', 'v3', credentials=creds)
 
 # 캘린더 일정 렌더링
 if creds:
@@ -198,4 +204,4 @@ with st.expander("기존 일정 삭제"):
         else:
             st.warning("삭제할 이벤트가 없습니다.")
     else:
-        st.warning
+        st.warning("로그인이 필요합니다.")
