@@ -15,6 +15,7 @@ CREDENTIALS_FILE = "google_credentials.json"
 st.set_page_config(page_title="Calendar", page_icon="📅", layout="centered")
 st.title("📅 스케줄 관리 페이지")
 
+
 # 자격 증명 관련 함수
 def creds_to_dict(creds):
     return {
@@ -48,12 +49,12 @@ def refresh_credentials(creds):
 def logout():
     if os.path.exists(CREDENTIALS_FILE):
         os.remove(CREDENTIALS_FILE)
-        st.success("성공적으로 로그아웃되었습니다.")
+        st.success("\uc131\uacf5\uc801\uc73c\ub85c \ub85c\uadf8\uc544\uc6c3\ub418\uc5c8\uc2b5\ub2c8\ub2e4.")
         st.write('<script>window.location.reload()</script>', unsafe_allow_html=True)
 
 def login():
     flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-        "C:\chat-gpt-prg\keep-your-determination\client_secret_529596907303-j96e1i1hsf6mmtsj5nas3t110v4fvpup.apps.googleusercontent.com.json", 
+        r"C:\\chat-gpt-prg\\keep-your-determination\\client_secret_529596907303-j96e1i1hsf6mmtsj5nas3t110v4fvpup.apps.googleusercontent.com.json", 
         scopes=['https://www.googleapis.com/auth/calendar']
     )
     creds = flow.run_local_server(port=0)
@@ -80,11 +81,23 @@ def add_event(service, summary, location, description, start_time, end_time, tim
 
 def fetch_events(service):
     now = datetime.utcnow().isoformat() + 'Z'
-    events_result = service.events().list(calendarId='primary', timeMin=now, maxResults=10, singleEvents=True, orderBy='startTime').execute()
-    return events_result.get('items', [])
+    try:
+        events_result = service.events().list(
+            calendarId='primary', timeMin=now, maxResults=10, singleEvents=True, orderBy='startTime'
+        ).execute()
+        return events_result.get('items', [])  # 항상 리스트 반환
+    except Exception as e:
+        st.error(f"이벤트를 불러오는 중 오류가 발생했습니다: {e}")
+        return []
 
 def render_fullcalendar(events, calendar_height=600):
-    events_json = [{'title': event['summary'], 'start': event['start'].get('dateTime', event['start'].get('date'))} for event in events]
+    events_json = [
+        {
+            'title': event.get('summary', '제목 없음'),
+            'start': event['start'].get('dateTime', event['start'].get('date', ''))
+        }
+        for event in events
+    ]
     calendar_html = f"""
     <!DOCTYPE html>
     <html>
@@ -109,6 +122,10 @@ def render_fullcalendar(events, calendar_height=600):
     """
     components.html(calendar_html, height=calendar_height)
 
+# Streamlit Session State로 events 관리
+if "events" not in st.session_state:
+    st.session_state.events = []  # 초기화
+
 # 로그인 상태 확인
 creds = load_credentials_from_file()
 if creds:
@@ -124,8 +141,11 @@ else:
 
 # 캘린더 일정 렌더링
 if creds:
-    events = fetch_events(service)
-    render_fullcalendar(events)
+    try:
+        st.session_state.events = fetch_events(service)
+    except Exception as e:
+        st.error(f"이벤트를 불러오는 중 문제가 발생했습니다: {e}")
+    render_fullcalendar(st.session_state.events)
 
 # 일정 추가 UI
 if creds:
@@ -152,84 +172,13 @@ if creds:
             if st.button("일정 추가"):
                 created_event = add_event(service, event_summary, event_location, event_description, start_datetime, end_datetime)
                 st.success(f"일정이 성공적으로 추가되었습니다! 시작: {start_datetime}, 종료: {end_datetime}")
-                events = fetch_events(service)
-                render_fullcalendar(events)
-
-
-# 기존 일정 수정 UI
-with st.expander("기존 일정 수정"):
-    if events:
-        selected_event = st.selectbox(
-            '수정할 일정 선택',
-            events,
-            format_func=lambda e: e['summary'] if 'summary' in e else '제목 없음',
-            key="edit_event_select"
-        )
-
-        new_title = st.text_input('새로운 일정 제목', selected_event['summary'], key="edit_event_title")
-
-        # 시작 날짜와 시간
-        start_datetime_str = selected_event['start'].get('dateTime', selected_event['start'].get('date'))
-        start_datetime = datetime.fromisoformat(start_datetime_str)
-        start_date = st.date_input("수정 시작 날짜", value=start_datetime.date(), key="edit_start_date")
-        start_time_str = st.text_input("수정 시작 시간 (HH:MM)", value=start_datetime.strftime("%H:%M"), key="edit_start_time")
-
-        # 종료 날짜와 시간
-        end_datetime_str = selected_event['end'].get('dateTime', selected_event['end'].get('date'))
-        end_datetime = datetime.fromisoformat(end_datetime_str)
-        end_date = st.date_input("수정 종료 날짜", value=end_datetime.date(), key="edit_end_date")
-        end_time_str = st.text_input("수정 종료 시간 (HH:MM)", value=end_datetime.strftime("%H:%M"), key="edit_end_time")
-
-        try:
-            # 입력된 시간 변환
-            start_time = datetime.strptime(start_time_str, "%H:%M").time()
-            end_time = datetime.strptime(end_time_str, "%H:%M").time()
-        except ValueError:
-            st.error("시간 형식이 잘못되었습니다. HH:MM 형식으로 입력해주세요.")
-            start_time, end_time = None, None
-
-        if start_time and end_time:
-            new_start_datetime = datetime.combine(start_date, start_time)
-            new_end_datetime = datetime.combine(end_date, end_time)
-
-            if st.button("일정 수정"):
-                # 수정된 일정 생성
-                updated_event = {
-                    'summary': new_title,
-                    'start': {
-                        'dateTime': new_start_datetime.isoformat(),
-                        'timeZone': 'Asia/Seoul',
-                    },
-                    'end': {
-                        'dateTime': new_end_datetime.isoformat(),
-                        'timeZone': 'Asia/Seoul',
-                    },
-                }
-                service.events().update(calendarId='primary', eventId=selected_event['id'], body=updated_event).execute()
-                st.success('일정가 수정되었습니다.')
-
-                # 최신 일정 목록 다시 불러오기
-                events = fetch_events(service)
-                render_fullcalendar(events)
-    else:
-        st.warning("수정할 일정가 없습니다.")
-
-
-# Streamlit Session State로 events 관리
-if "events" not in st.session_state:
-    st.session_state.events = []  # 초기화
+                st.session_state.events = fetch_events(service)
+                render_fullcalendar(st.session_state.events)
 
 # 일정 삭제 UI
 with st.expander("기존 일정 삭제"):
-    if creds:  # 로그인 여부 확인
-        try:
-            # 이벤트 목록 가져오기
-            st.session_state.events = fetch_events(service)
-        except Exception as e:
-            st.error(f"이벤트를 불러오는 중 문제가 발생했습니다: {e}")
-            st.session_state.events = []  # 오류 발생 시 빈 리스트로 초기화
-
-        if st.session_state.events:  # 가져온 이벤트가 있을 경우
+    if creds:
+        if st.session_state.events:
             selected_event = st.selectbox(
                 '삭제할 이벤트 선택',
                 st.session_state.events,
@@ -239,11 +188,8 @@ with st.expander("기존 일정 삭제"):
 
             if st.button("이벤트 삭제"):
                 try:
-                    # 선택한 이벤트 삭제
                     service.events().delete(calendarId='primary', eventId=selected_event['id']).execute()
                     st.success(f"'{selected_event['summary']}' 이벤트가 삭제되었습니다.")
-
-                    # 최신 이벤트 목록 다시 가져오기
                     st.session_state.events = fetch_events(service)
                     render_fullcalendar(st.session_state.events)
                 except Exception as e:
@@ -251,4 +197,4 @@ with st.expander("기존 일정 삭제"):
         else:
             st.warning("삭제할 이벤트가 없습니다.")
     else:
-        st.warning("로그인이 필요합니다. 먼저 로그인하세요.")
+        st.warning
