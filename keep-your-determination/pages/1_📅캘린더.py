@@ -52,20 +52,21 @@ def logout():
         st.write('<script>window.location.reload()</script>', unsafe_allow_html=True)
 
 def login():
-    secrets_file_content = st.secrets["GOOGLE_CLIENT_SECRETS"]
-    with open("client_secret.json", "w") as f:
-        f.write(secrets_file_content)
-    flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-        "client_secret.json",
-        scopes=['https://www.googleapis.com/auth/calendar']
-    )
-    creds = flow.run_console()
-    save_credentials_to_file(creds)
-    return creds
-
-    else:
+    try:
+        secrets_file_content = st.secrets["GOOGLE_CLIENT_SECRETS"]
+        with open("client_secret.json", "w") as f:
+            f.write(secrets_file_content)
+        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+            "client_secret.json",
+            scopes=['https://www.googleapis.com/auth/calendar']
+        )
+        creds = flow.run_console()
+        save_credentials_to_file(creds)
+        return creds
+    except KeyError:
         st.error("환경 변수 'GOOGLE_CLIENT_SECRETS'가 설정되지 않았습니다.")
         return None
+
 
 # 캘린더 일정 관련 함수
 def add_event(service, summary, location, description, start_time, end_time, time_zone='Asia/Seoul'):
