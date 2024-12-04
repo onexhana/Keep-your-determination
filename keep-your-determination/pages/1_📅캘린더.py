@@ -68,6 +68,7 @@ def login():
         return None
 
 
+
 # 캘린더 일정 관련 함수
 def add_event(service, summary, location, description, start_time, end_time, time_zone='Asia/Seoul'):
     event = {
