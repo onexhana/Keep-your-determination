@@ -213,3 +213,6 @@ with st.expander("기존 일정 삭제"):
             st.warning("삭제할 이벤트가 없습니다.")
     else:
         st.warning("로그인이 필요합니다.")
+
+st.write(st.secrets)
+
