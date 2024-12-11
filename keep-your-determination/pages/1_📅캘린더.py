@@ -83,21 +83,25 @@ def login():
         client_config={"web": client_config},
         scopes=['https://www.googleapis.com/auth/calendar']
     )
-    flow.redirect_uri = "http://localhost:8501"  # 리디렉션 URI 설정
+    flow.redirect_uri = st.secrets.get("REDIRECT_URI", "http://localhost:8501")  # 기본 리디렉션 URL
 
-    # OAuth2 승인 URL 생성 및 사용자 인증 처리
+    # 인증 URL 생성
     auth_url, _ = flow.authorization_url(prompt="consent")
-    st.write(f"[Google 인증하기]({auth_url})")
-    code = st.text_input("인증 코드 입력")
-    if code:
+    st.markdown(f"[Google 계정 연동하기]({auth_url})", unsafe_allow_html=True)
+
+    # Streamlit URL이 인증된 상태인지 확인
+    if "code" in st.experimental_get_query_params():
+        code = st.experimental_get_query_params()["code"]
         try:
             flow.fetch_token(code=code)
             creds = flow.credentials
             save_credentials_to_file(creds)
+            st.success("Google 계정이 성공적으로 연동되었습니다.")
             return creds
         except Exception as e:
             st.error(f"인증 실패: {e}")
             return None
+
 
 
 # 캘린더 일정 관련 함수
