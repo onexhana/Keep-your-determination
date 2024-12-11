@@ -5,5 +5,5 @@ google-auth
 google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
-streamlit
-openai
+streamlit>=1.18.0
+openai==0.28.0
