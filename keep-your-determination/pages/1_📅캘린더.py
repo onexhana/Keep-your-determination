@@ -90,8 +90,9 @@ def login():
     st.markdown(f"[Google 계정 연동하기]({auth_url})", unsafe_allow_html=True)
 
     # Streamlit URL이 인증된 상태인지 확인
-    if "code" in st.experimental_get_query_params():
-        code = st.experimental_get_query_params()["code"]
+    if "code" in st.query_params:
+        code = st.query_params["code"]
+
         try:
             flow.fetch_token(code=code)
             creds = flow.credentials
