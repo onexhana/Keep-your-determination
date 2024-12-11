@@ -8,6 +8,16 @@ import os
 import json
 import google.auth.transport.requests
 
+# 파일 존재 여부 확인 코드 추가
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CLIENT_SECRET_FILE = os.path.join(BASE_DIR, "client_secret_529596907303-56rfhou45uv2d913te9n5ri822m8c3hb.apps.googleusercontent.com.json")
+
+if not os.path.exists(CLIENT_SECRET_FILE):
+    st.error(f"클라이언트 비밀 파일({CLIENT_SECRET_FILE})을 찾을 수 없습니다.")
+else:
+    st.success(f"클라이언트 비밀 파일({CLIENT_SECRET_FILE})이 로드되었습니다.")
+
+
 # 자격 증명 파일 이름
 CREDENTIALS_FILE = "google_credentials.json"
 CLIENT_SECRET_FILE = r"C:\chat-gpt-prg\keep-your-determination\client_secret_529596907303-56rfhou45uv2d913te9n5ri822m8c3hb.apps.googleusercontent.com.json"
