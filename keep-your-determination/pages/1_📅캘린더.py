@@ -17,34 +17,14 @@ if "GOOGLE_CLIENT_SECRETS" in st.secrets:
     client_secret_data = json.loads(st.secrets["GOOGLE_CLIENT_SECRETS"])
     CLIENT_SECRET_FILE = "client_secret.json"
     
+    # 클라이언트 비밀 정보를 JSON 파일로 저장
     with open(CLIENT_SECRET_FILE, "w") as f:
         json.dump(client_secret_data["web"], f)
     
     st.success("클라이언트 비밀 정보를 성공적으로 로드했습니다.")
-    st.json(client_secret_data)  # 디버깅용
 else:
     st.error("GOOGLE_CLIENT_SECRETS가 Streamlit Secrets에 설정되어 있지 않습니다.")
     st.stop()
-
-
-# 클라이언트 비밀 파일 생성
-CLIENT_SECRET_FILE = "client_secret.json"
-if "google_client_secret" in st.secrets:
-    # Streamlit Secrets에서 클라이언트 비밀 정보를 가져와 파일로 저장
-    client_secret_data = {
-        "installed": {
-            "client_id": st.secrets["google_client_secret"]["client_id"],
-            "client_secret": st.secrets["google_client_secret"]["client_secret"],
-            "auth_uri": st.secrets["google_client_secret"]["auth_uri"],
-            "token_uri": st.secrets["google_client_secret"]["token_uri"],
-            "auth_provider_x509_cert_url": st.secrets["google_client_secret"]["auth_provider_x509_cert_url"],
-            "redirect_uris": st.secrets["google_client_secret"]["redirect_uris"],
-        }
-    }
-    with open(CLIENT_SECRET_FILE, "w") as f:
-        f.write(json.dumps(client_secret_data))
-else:
-    st.error("클라이언트 비밀 정보가 Streamlit Secrets에 설정되어 있지 않습니다.")
 
 # 자격 증명 파일 이름
 CREDENTIALS_FILE = "google_credentials.json"
