@@ -12,6 +12,15 @@ import google.auth.transport.requests
 st.set_page_config(page_title="Calendar", page_icon="📅", layout="centered")
 st.title("📅 스케줄 관리 페이지")
 
+
+if "GOOGLE_CLIENT_SECRETS" in st.secrets:
+    client_secret_data = json.loads(st.secrets["GOOGLE_CLIENT_SECRETS"])
+    st.write("클라이언트 비밀 정보 로드 성공!")
+    st.json(client_secret_data)
+else:
+    st.error("GOOGLE_CLIENT_SECRETS가 Streamlit Secrets에 설정되어 있지 않습니다.")
+
+
 # Streamlit Secrets에서 Google 클라이언트 비밀 정보 로드
 if "GOOGLE_CLIENT_SECRETS" in st.secrets:
     client_secret_data = json.loads(st.secrets["GOOGLE_CLIENT_SECRETS"])
