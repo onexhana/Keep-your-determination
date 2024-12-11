@@ -11,7 +11,7 @@ import google.auth.transport.requests
 # 자격 증명 파일 이름
 CLIENT_SECRET_FILE = "google_credentials.json"
 CREDENTIALS_FILE = "google_credentials.json"
-CLIENT_SECRET_FILE = r"C:\chat-gpt-prg\keep-your-determination\client_secret_529596907303-56rfhou45uv2d913te9n5ri822m8c3hb.apps.googleusercontent.com.json"
+CLIENT_SECRET_FILE = r"keep-your-determination/client_secret_529596907303-56rfhou45uv2d913te9n5ri822m8c3hb.apps.googleusercontent.com.json"
 
 # Streamlit 설정
 st.set_page_config(page_title="Calendar", page_icon="📅", layout="centered")
