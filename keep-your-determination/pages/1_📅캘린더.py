@@ -1,27 +1,38 @@
+import os
+import json
 import streamlit as st
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 from googleapiclient.discovery import build
 from datetime import datetime, date
 import streamlit.components.v1 as components
-import os
-import json
 import google.auth.transport.requests
 
-# Streamlit 설정 (최상단에 배치)
+# Streamlit 설정 (반드시 최상단에 위치)
 st.set_page_config(page_title="Calendar", page_icon="📅", layout="centered")
 st.title("📅 스케줄 관리 페이지")
 
-# 파일 경로 설정
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CLIENT_SECRET_FILE = os.path.join(BASE_DIR, "client_secret.json")
-CREDENTIALS_FILE = os.path.join(BASE_DIR, "google_credentials.json")
-
-# 파일 존재 여부 확인
-if not os.path.exists(CLIENT_SECRET_FILE):
-    st.error(f"클라이언트 비밀 파일({CLIENT_SECRET_FILE})을 찾을 수 없습니다. 파일을 확인하거나 Streamlit Secrets를 사용하세요.")
+# 클라이언트 비밀 파일 생성
+CLIENT_SECRET_FILE = "client_secret.json"
+if "google_client_secret" in st.secrets:
+    # Streamlit Secrets에서 클라이언트 비밀 정보를 가져와 파일로 저장
+    client_secret_data = {
+        "installed": {
+            "client_id": st.secrets["google_client_secret"]["client_id"],
+            "client_secret": st.secrets["google_client_secret"]["client_secret"],
+            "auth_uri": st.secrets["google_client_secret"]["auth_uri"],
+            "token_uri": st.secrets["google_client_secret"]["token_uri"],
+            "auth_provider_x509_cert_url": st.secrets["google_client_secret"]["auth_provider_x509_cert_url"],
+            "redirect_uris": st.secrets["google_client_secret"]["redirect_uris"],
+        }
+    }
+    with open(CLIENT_SECRET_FILE, "w") as f:
+        f.write(json.dumps(client_secret_data))
 else:
-    st.success(f"클라이언트 비밀 파일({CLIENT_SECRET_FILE})이 로드되었습니다.")
+    st.error("클라이언트 비밀 정보가 Streamlit Secrets에 설정되어 있지 않습니다.")
+
+# 자격 증명 파일 이름
+CREDENTIALS_FILE = "google_credentials.json"
 
 # 자격 증명 관련 함수
 def creds_to_dict(creds):
@@ -47,7 +58,7 @@ def load_credentials_from_file():
                 return creds
         except Exception as e:
             st.error(f"자격 증명 파일 로드 중 오류: {e}")
-            os.remove(CREDENTIALS_FILE)  # 손상된 파일 삭제
+            os.remove(CREDENTIALS_FILE)
     return None
 
 def refresh_credentials(creds):
