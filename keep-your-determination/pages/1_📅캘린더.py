@@ -74,13 +74,31 @@ def login():
         st.error("클라이언트 비밀 파일(client_secret.json)을 찾을 수 없습니다.")
         return None
 
-    flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-        CLIENT_SECRET_FILE,
+    # 클라이언트 비밀 파일에서 데이터 로드
+    with open(CLIENT_SECRET_FILE, "r") as f:
+        client_config = json.load(f)
+
+    # Google 인증 흐름 생성
+    flow = google_auth_oauthlib.flow.Flow.from_client_config(
+        client_config={"web": client_config},
         scopes=['https://www.googleapis.com/auth/calendar']
     )
-    creds = flow.run_local_server(port=0)
-    save_credentials_to_file(creds)
-    return creds
+    flow.redirect_uri = "http://localhost:8501"  # 리디렉션 URI 설정
+
+    # OAuth2 승인 URL 생성 및 사용자 인증 처리
+    auth_url, _ = flow.authorization_url(prompt="consent")
+    st.write(f"[Google 인증하기]({auth_url})")
+    code = st.text_input("인증 코드 입력")
+    if code:
+        try:
+            flow.fetch_token(code=code)
+            creds = flow.credentials
+            save_credentials_to_file(creds)
+            return creds
+        except Exception as e:
+            st.error(f"인증 실패: {e}")
+            return None
+
 
 # 캘린더 일정 관련 함수
 def add_event(service, summary, location, description, start_time, end_time, time_zone='Asia/Seoul'):
